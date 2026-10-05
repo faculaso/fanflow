@@ -1,0 +1,64 @@
+# Builds FanFlow and publishes a GitHub release whenever a version tag is pushed:
+#
+#   1. Bump "version" in package.json and commit.
+#   2. git tag v0.2.0 && git push origin main v0.2.0
+#
+# The tag must match package.json, so the release name and the .exe names agree.
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check tag matches package.json version
+        shell: bash
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version v$version"
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # Builds the C# hardware helper, type-checks, bundles the UI and packages the
+      # installer + portable .exe into release/. Publishing is done below with gh, so
+      # electron-builder must not try to upload on its own when it sees the tag.
+      - name: Build installer
+        run: npm run electron:build -- --publish never
+
+      - name: Publish release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          gh release create "$GITHUB_REF_NAME" \
+            "release/FanFlow Setup $version.exe" \
+            "release/FanFlow $version.exe" \
+            --title "FanFlow $version" \
+            --generate-notes
