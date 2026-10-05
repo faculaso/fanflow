@@ -1,0 +1,259 @@
+@import "tailwindcss";
+@import "@fontsource-variable/plus-jakarta-sans";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Semantic tokens — components only ever use these, so light/dark is a single swap. */
+:root {
+  color-scheme: light;
+  --bg: #e7e6ef;
+  --blob-1: #cbc3f0;
+  --blob-2: #f6d3b4;
+  --blob-3: #bccdee;
+  --blob-4: #edc6e5;
+
+  --glass: rgba(255, 255, 255, 0.5);
+  --glass-strong: rgba(255, 255, 255, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.75);
+  --glass-shadow: 0 10px 40px -12px rgba(60, 56, 100, 0.18);
+  --panel: rgba(255, 255, 255, 0.28);
+
+  --ink: #1c1e2e;
+  --muted: #6b6e85;
+  --faint: #a3a5b8;
+  --line: rgba(28, 30, 46, 0.08);
+  --track: rgba(28, 30, 46, 0.08);
+  --chip: rgba(255, 255, 255, 0.7);
+  --chip-active: #ffffff;
+
+  --accent: #f59e0b;
+  --accent-2: #fb923c;
+  --accent-ink: #c2410c;
+  --accent-soft: rgba(245, 158, 11, 0.14);
+
+  --cool: #3b82f6;
+  --warm: #f59e0b;
+  --hot: #ef4444;
+  --ok: #16a34a;
+  --lcd-bg: #1b1d29;
+}
+
+:root.dark {
+  color-scheme: dark;
+  --bg: #12131b;
+  --blob-1: #2c2552;
+  --blob-2: #3d2a1c;
+  --blob-3: #1b2c4a;
+  --blob-4: #36203d;
+
+  --glass: rgba(34, 36, 52, 0.55);
+  --glass-strong: rgba(48, 50, 70, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 10px 40px -12px rgba(0, 0, 0, 0.55);
+  --panel: rgba(255, 255, 255, 0.03);
+
+  --ink: #f1f1f7;
+  --muted: #a1a3ba;
+  --faint: #66697f;
+  --line: rgba(255, 255, 255, 0.07);
+  --track: rgba(255, 255, 255, 0.08);
+  --chip: rgba(255, 255, 255, 0.06);
+  --chip-active: rgba(255, 255, 255, 0.14);
+
+  --accent: #fbbf24;
+  --accent-2: #fb923c;
+  --accent-ink: #fdba74;
+  --accent-soft: rgba(251, 191, 36, 0.14);
+
+  --cool: #60a5fa;
+  --warm: #fbbf24;
+  --hot: #f87171;
+  --ok: #4ade80;
+  --lcd-bg: #0b0c12;
+}
+
+@theme inline {
+  --font-sans: "Plus Jakarta Sans Variable", "Segoe UI", system-ui, sans-serif;
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-track: var(--track);
+  --color-chip: var(--chip);
+  --color-chip-active: var(--chip-active);
+  --color-glass-strong: var(--glass-strong);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-cool: var(--cool);
+  --color-warm: var(--warm);
+  --color-hot: var(--hot);
+  --color-ok: var(--ok);
+  --color-lcd: var(--lcd-bg);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.4s ease;
+}
+
+@layer components {
+  .glass {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    backdrop-filter: blur(28px) saturate(150%);
+  }
+
+  .glass-panel {
+    background: var(--panel);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(12px);
+  }
+
+  .accent-gradient {
+    background-image: linear-gradient(135deg, var(--accent), var(--accent-2));
+  }
+
+  .chip-shadow {
+    box-shadow: 0 4px 14px -4px rgba(60, 56, 100, 0.25);
+  }
+
+  /* Range slider: filled portion is driven by the --value custom property (0-100). */
+  .range {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    border-radius: 9999px;
+    background: linear-gradient(
+      90deg,
+      var(--accent) 0%,
+      var(--accent-2) calc(var(--value, 0) * 1%),
+      var(--track) calc(var(--value, 0) * 1%)
+    );
+    cursor: pointer;
+  }
+
+  .range:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  .range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 18px;
+    width: 18px;
+    border-radius: 9999px;
+    background: #fff;
+    border: 4px solid var(--accent);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.15s ease;
+  }
+
+  .range:not(:disabled)::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+  }
+
+  .field {
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: var(--chip);
+    padding: 0.55rem 0.85rem;
+    font-size: 0.875rem;
+    color: var(--ink);
+    transition: border-color 0.15s ease;
+  }
+
+  .field:focus {
+    border-color: var(--accent);
+  }
+}
+
+/* App-drawn title bar (the native one is hidden). The whole strip drags the window;
+   the content scrolling underneath is frosted rather than cut off. */
+.titlebar {
+  app-region: drag;
+  -webkit-app-region: drag;
+  user-select: none;
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+
+/* Soft, slowly drifting colour blobs behind the glass, as in the reference. */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: var(--bg);
+  transition: background-color 0.4s ease;
+}
+
+.backdrop span {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  opacity: 0.9;
+  animation: drift 26s ease-in-out infinite alternate;
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(40px, -30px, 0) scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop span {
+    animation: none;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--track);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--faint);
+}
+
+/* Theme-matching focus ring for keyboard focus only. */
+button,
+a,
+input,
+[tabindex] {
+  outline: none;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

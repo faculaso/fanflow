@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>FanFlowHardwareHelper</RootNamespace>
+    <AssemblyName>FanFlowHardwareHelper</AssemblyName>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <!--
+      LibreHardwareMonitorLib's Ring0 driver loader extracts an embedded .sys resource
+      next to the running assembly and relies on Assembly.Location, which returns an
+      empty string under PublishSingleFile — silently breaking raw hardware access
+      (CPU registers, SuperIO) while OS/vendor-driver-backed sensors (GPU, CPU load)
+      keep working. Ship as a normal multi-file self-contained folder instead.
+    -->
+    <PublishSingleFile>false</PublishSingleFile>
+    <PublishTrimmed>false</PublishTrimmed>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.6" />
+    <PackageReference Include="HidSharp" Version="2.6.4" />
+  </ItemGroup>
+
+</Project>
