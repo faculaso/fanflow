@@ -83,6 +83,10 @@ Gracias a [csm-cooler-lcd](https://github.com/YehanKD/csm-cooler-lcd) y [bemless
 | [Electron](https://www.electronjs.org/), [React](https://react.dev/), [Recharts](https://recharts.org/), [Framer Motion](https://motion.dev/), [Lucide](https://lucide.dev/) | MIT |
 | [Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans) | OFL-1.1 |
 
+## Licencia
+
+FanFlow se distribuye bajo la [licencia MIT](LICENSE). Los componentes de terceros mantienen sus propias licencias (ver arriba).
+
 ## Aviso
 
 FanFlow escribe directamente en el hardware: velocidad de ventiladores y listas de memoria del sistema. Una curva mal configurada puede dejar componentes sin refrigeración suficiente. Usalo bajo tu propia responsabilidad. Al cerrar la app, todos los ventiladores vuelven al control de la BIOS.
