@@ -33,7 +33,7 @@ export interface ProfileOption {
   label: string;
 }
 
-export type DashboardView = 'dashboard' | 'curves' | 'sensors' | 'memory' | 'settings';
+export type DashboardView = 'dashboard' | 'curves' | 'sensors' | 'memory' | 'keyboard' | 'settings';
 
 export interface SensorReading {
   id: string;
@@ -83,6 +83,13 @@ export interface LiveHardwareUpdate {
   board: { temps: LiveBoardTemp[] };
   fans: LiveFan[];
   display?: { connected: boolean };
+  keyboard?: {
+    connected: boolean;
+    busy: boolean;
+    /** USB product string, e.g. "KG991W USB keyboard". */
+    product?: string | null;
+    suggestedModel?: KeyboardModelId | null;
+  };
   memory?: MemoryStats | null;
 }
 
@@ -111,6 +118,21 @@ export interface MemoryCleanResult {
 export interface DisplayConfig {
   enabled: boolean;
   source: 'cpu' | 'gpu';
+}
+
+/** Screen variants of the 0C45:8009 board; must match KeyboardScreen.Models in the helper. */
+export type KeyboardModelId = 'ajazz128' | 'monka160x80';
+
+export interface KeyboardConfig {
+  /** Set the keyboard's clock whenever it's plugged in. */
+  autoSyncTime: boolean;
+  /** Screen picked by the user; null = follow the keyboard's own name. */
+  model: KeyboardModelId | null;
+}
+
+export interface KeyboardTaskResult {
+  ok: boolean;
+  error?: string;
 }
 
 export interface HardwareStatus {

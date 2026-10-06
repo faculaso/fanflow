@@ -27,6 +27,7 @@ class HardwareBridge {
     this.lastStatus = null;
     this.lastUpdate = null;
     this.pendingMemoryCleans = new Map();
+    this.pendingKeyboardTasks = new Map();
     this.nextRequestId = 1;
   }
 
@@ -71,6 +72,8 @@ class HardwareBridge {
       if (payload.type === 'update') this.emitUpdate(payload);
       else if (payload.type === 'status') this.emitStatus(payload);
       else if (payload.type === 'memoryCleaned') this.resolveMemoryClean(payload);
+      else if (payload.type === 'keyboardProgress') this.pendingKeyboardTasks.get(payload.requestId)?.onProgress?.(payload);
+      else if (payload.type === 'keyboardResult') this.resolveKeyboardTask(payload);
       else if (payload.type === 'error') this.emitStatus({ ...this.lastStatus, ok: true, warning: payload.message });
     });
 
@@ -128,6 +131,56 @@ class HardwareBridge {
     if (!resolve) return;
     this.pendingMemoryCleans.delete(requestId);
     resolve({ ok, error, freed, availableGained, results });
+  }
+
+  /** Keyboard screen (Ajazz AK820 Pro / AKS075, USB 0C45:8009) options. */
+  setKeyboard({ autoSyncTime, model }) {
+    this.send({ type: 'setKeyboard', autoSyncTime, model });
+  }
+
+  /**
+   * Runs a keyboard screen task in the helper and resolves with { ok, error } when it
+   * reports back. `frames` is RGB565 pixel data for every frame, back to back.
+   */
+  runKeyboardTask(command, { timeoutMs = 20_000, onProgress } = {}) {
+    if (!this.child || this.child.exitCode !== null) {
+      return Promise.resolve({ ok: false, error: 'helper-unavailable' });
+    }
+    const requestId = String(this.nextRequestId++);
+    return new Promise((resolve) => {
+      const timeout = setTimeout(() => {
+        this.pendingKeyboardTasks.delete(requestId);
+        resolve({ ok: false, error: 'timeout' });
+      }, timeoutMs);
+      this.pendingKeyboardTasks.set(requestId, {
+        onProgress,
+        resolve: (result) => {
+          clearTimeout(timeout);
+          resolve(result);
+        },
+      });
+      this.send({ ...command, requestId });
+    });
+  }
+
+  syncKeyboardTime(model) {
+    return this.runKeyboardTask({ type: 'keyboardSyncTime', model });
+  }
+
+  uploadKeyboardImage(model, frames, delays, onProgress) {
+    const chunks = Math.ceil((256 + frames.byteLength) / 4096);
+    return this.runKeyboardTask(
+      { type: 'keyboardUpload', model, frames: Buffer.from(frames).toString('base64'), delays },
+      // Every 4 KB chunk waits for the keyboard's ACK (up to 300 ms).
+      { timeoutMs: 30_000 + chunks * 400, onProgress },
+    );
+  }
+
+  resolveKeyboardTask({ requestId, ok, error }) {
+    const task = this.pendingKeyboardTasks.get(requestId);
+    if (!task) return;
+    this.pendingKeyboardTasks.delete(requestId);
+    task.resolve({ ok, error: error ?? undefined });
   }
 
   /** Configures the cooler's temperature display (USB HID 5131:2007). */

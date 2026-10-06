@@ -46,11 +46,20 @@ function getDisplayPrefs(prefs = loadPrefs()) {
   };
 }
 
+function getKeyboardPrefs(prefs = loadPrefs()) {
+  return {
+    autoSyncTime: prefs.keyboardAutoSyncTime !== false, // default: on
+    // Screen the user picked; null means "use whatever the keyboard's name suggests".
+    model: typeof prefs.keyboardModel === 'string' ? prefs.keyboardModel : null,
+  };
+}
+
 ipcMain.handle('settings:get', async () => {
   const prefs = loadPrefs();
   return {
     minimizeToTray: prefs.minimizeToTray !== false,
     display: getDisplayPrefs(prefs),
+    keyboard: getKeyboardPrefs(prefs),
     startWithWindows: await isStartupEnabled(),
     startWithWindowsSupported: isStartupSupported(),
   };
@@ -85,6 +94,12 @@ ipcMain.handle('settings:setDisplay', (_event, { enabled, source }) => {
   const prefs = { ...loadPrefs(), displayEnabled: Boolean(enabled), displaySource: source };
   savePrefs(prefs);
   bridge.setDisplay(getDisplayPrefs(prefs));
+});
+
+ipcMain.handle('settings:setKeyboard', (_event, { autoSyncTime, model }) => {
+  const prefs = { ...loadPrefs(), keyboardAutoSyncTime: Boolean(autoSyncTime), keyboardModel: model ?? null };
+  savePrefs(prefs);
+  bridge.setKeyboard(getKeyboardPrefs(prefs));
 });
 
 async function collectHardwareInfo() {
@@ -151,6 +166,14 @@ ipcMain.handle('hardware:setFanAuto', (_event, { id }) => {
 });
 
 ipcMain.handle('hardware:cleanMemory', (_event, operations) => bridge.cleanMemory(operations));
+
+ipcMain.handle('keyboard:syncTime', (_event, model) => bridge.syncKeyboardTime(model));
+
+ipcMain.handle('keyboard:upload', (event, { model, frames, delays }) =>
+  bridge.uploadKeyboardImage(model, frames, delays, ({ sent, total }) => {
+    if (!event.sender.isDestroyed()) event.sender.send('keyboard:progress', { sent, total });
+  }),
+);
 
 function createTray() {
   if (tray) return;
@@ -222,6 +245,7 @@ function createWindow() {
     onStatus: (payload) => mainWindow?.webContents.send('hardware:status', payload),
   });
   bridge.setDisplay(getDisplayPrefs());
+  bridge.setKeyboard(getKeyboardPrefs());
 
   if (isDev) {
     mainWindow.loadURL(process.env.ELECTRON_START_URL || 'http://localhost:5183');

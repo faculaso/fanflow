@@ -10,6 +10,7 @@ internal static class Program
     private static readonly object ComputerLock = new();
     private static volatile bool _shuttingDown;
     private static readonly CoolerDisplay Display = new();
+    private static readonly KeyboardScreen Keyboard = new();
 
     private static void Main()
     {
@@ -117,6 +118,34 @@ internal static class Program
             return;
         }
 
+        if (type == "setKeyboard")
+        {
+            Keyboard.Configure(
+                node["autoSyncTime"]?.GetValue<bool>() ?? true,
+                node["model"]?.GetValue<string>());
+            return;
+        }
+
+        if (type is "keyboardSyncTime" or "keyboardUpload")
+        {
+            // Uploads take seconds to minutes; run them off the command thread.
+            string? requestId = node["requestId"]?.GetValue<string>();
+            string model = node["model"]?.GetValue<string>() ?? "";
+            string? frames = node["frames"]?.GetValue<string>();
+            var delays = node["delays"]?.AsArray().Select(d => d!.GetValue<int>()).ToList() ?? [];
+            Task.Run(() => RunKeyboardTask(requestId, type == "keyboardSyncTime"
+                ? () => Keyboard.SyncTime(model)
+                : () => Keyboard.Upload(model, Convert.FromBase64String(frames ?? ""), delays, (sent, total) =>
+                    Emit(new JsonObject
+                    {
+                        ["type"] = "keyboardProgress",
+                        ["requestId"] = requestId,
+                        ["sent"] = sent,
+                        ["total"] = total,
+                    }))));
+            return;
+        }
+
         lock (ComputerLock)
         {
             switch (type)
@@ -147,6 +176,26 @@ internal static class Program
                 }
             }
         }
+    }
+
+    private static void RunKeyboardTask(string? requestId, Action task)
+    {
+        string? error = null;
+        try
+        {
+            task();
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+        Emit(new JsonObject
+        {
+            ["type"] = "keyboardResult",
+            ["requestId"] = requestId,
+            ["ok"] = error is null,
+            ["error"] = error,
+        });
     }
 
     private static IControl? FindControl(string identifier)
@@ -293,6 +342,13 @@ internal static class Program
             ["board"] = new JsonObject { ["temps"] = boardTemps },
             ["fans"] = fansOut,
             ["display"] = new JsonObject { ["connected"] = Display.Connected },
+            ["keyboard"] = new JsonObject
+            {
+                ["connected"] = Keyboard.Poll(),
+                ["busy"] = Keyboard.Busy,
+                ["product"] = Keyboard.ProductName,
+                ["suggestedModel"] = Keyboard.SuggestedModel,
+            },
             ["memory"] = MemoryCleaner.GetStats(),
         });
     }

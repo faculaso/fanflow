@@ -2,6 +2,9 @@ import type {
   DisplayConfig,
   HardwareInfo,
   HardwareStatus,
+  KeyboardConfig,
+  KeyboardModelId,
+  KeyboardTaskResult,
   LiveHardwareUpdate,
   MemoryCleanResult,
   MemoryOperation,
@@ -10,6 +13,9 @@ import type {
 export {};
 
 declare global {
+  /** package.json version, injected by Vite. */
+  const __APP_VERSION__: string;
+
   interface Window {
     hardware?: {
       getInfo: () => Promise<HardwareInfo>;
@@ -30,6 +36,7 @@ declare global {
       get: () => Promise<{
         minimizeToTray: boolean;
         display: DisplayConfig;
+        keyboard: KeyboardConfig;
         startWithWindows: boolean;
         startWithWindowsSupported: boolean;
       }>;
@@ -37,6 +44,14 @@ declare global {
       setStartWithWindows: (value: boolean) => Promise<boolean>;
       setMinimizeToTray: (value: boolean) => Promise<void>;
       setDisplay: (config: DisplayConfig) => Promise<void>;
+      setKeyboard: (config: KeyboardConfig) => Promise<void>;
+    };
+    /** TFT screen on 0C45:8009 keyboards (Ajazz AK820 Pro / AKS075, Monka KG991W). */
+    keyboardScreen?: {
+      syncTime: (model: KeyboardModelId) => Promise<KeyboardTaskResult>;
+      /** frames: RGB565 LE pixels of every frame back to back; delays in ms, one per frame. */
+      upload: (model: KeyboardModelId, frames: Uint8Array, delays: number[]) => Promise<KeyboardTaskResult>;
+      onProgress: (callback: (progress: { sent: number; total: number }) => void) => () => void;
     };
   }
 }

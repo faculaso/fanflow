@@ -28,6 +28,17 @@ contextBridge.exposeInMainWorld('settings', {
   setMinimizeToTray: (value) => ipcRenderer.invoke('settings:setMinimizeToTray', value),
   setDisplay: (config) => ipcRenderer.invoke('settings:setDisplay', config),
   setStartWithWindows: (value) => ipcRenderer.invoke('settings:setStartWithWindows', value),
+  setKeyboard: (config) => ipcRenderer.invoke('settings:setKeyboard', config),
+});
+
+contextBridge.exposeInMainWorld('keyboardScreen', {
+  syncTime: (model) => ipcRenderer.invoke('keyboard:syncTime', model),
+  upload: (model, frames, delays) => ipcRenderer.invoke('keyboard:upload', { model, frames, delays }),
+  onProgress: (callback) => {
+    const listener = (_event, payload) => callback(payload);
+    ipcRenderer.on('keyboard:progress', listener);
+    return () => ipcRenderer.removeListener('keyboard:progress', listener);
+  },
 });
 
 contextBridge.exposeInMainWorld('appWindow', {

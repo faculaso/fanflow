@@ -7,6 +7,8 @@ export { default as SettingsView } from './SettingsView';
 export { default as ProfileBar } from './ProfileBar';
 export { default as MemoryView } from './MemoryView';
 export { useMemoryCleaner } from './useMemoryCleaner';
+export { default as KeyboardView } from './KeyboardView';
+export { useKeyboardScreen } from './useKeyboardScreen';
 export { CoolerDisplayCard, HistoryCard, OverviewCard, TemperaturesCard } from './DashboardCards';
 export { GlassCard } from './ui';
 

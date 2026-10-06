@@ -10,6 +10,7 @@ const TITLES: Record<DashboardView, { title: string; subtitle: string }> = {
   curves: { title: 'Curvas de ventilación', subtitle: 'Cómo responde cada ventilador a la temperatura' },
   sensors: { title: 'Sensores', subtitle: 'Hardware detectado y lecturas en vivo' },
   memory: { title: 'Memoria', subtitle: 'Uso de RAM y liberación de memoria' },
+  keyboard: { title: 'Pantalla del teclado', subtitle: 'GIFs e imágenes en la pantallita del teclado' },
   settings: { title: 'Ajustes', subtitle: 'Preferencias de FanFlow' },
 };
 

@@ -8,6 +8,7 @@ import {
   GlassCard,
   HeaderStatus,
   HistoryCard,
+  KeyboardView,
   MemoryView,
   OverviewCard,
   ProfileBar,
@@ -18,6 +19,7 @@ import {
   clamp,
   formatTemp,
   useMemoryCleaner,
+  useKeyboardScreen,
   usePreferences,
   getSourceTemp,
   interpolateCurve,
@@ -221,6 +223,8 @@ export default function App() {
   const cpuHistory = useTempHistory(cpuTemp);
   // Lives here (not in MemoryView) so automatic cleaning keeps running on every tab.
   const memory = useMemoryCleaner(live.data?.memory, usingRealHardware);
+  // Also here so an upload in progress survives switching tabs.
+  const keyboard = useKeyboardScreen();
   const prefs = usePreferences();
 
   const fanIdentities: FanIdentity[] =
@@ -495,6 +499,8 @@ export default function App() {
                 )}
 
                 {view === 'memory' && <MemoryView memory={memory} />}
+
+                {view === 'keyboard' && <KeyboardView keyboard={keyboard} />}
 
                 {view === 'settings' && <SettingsView />}
               </motion.div>

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Fan, LayoutGrid, MemoryStick, Settings, SlidersHorizontal, Thermometer } from 'lucide-react';
+import { Fan, Keyboard, LayoutGrid, MemoryStick, Settings, SlidersHorizontal, Thermometer } from 'lucide-react';
 import type { DashboardView } from './types';
 
 interface NavItem {
@@ -13,6 +13,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'curves', label: 'Curvas de ventilación', icon: SlidersHorizontal },
   { id: 'sensors', label: 'Sensores', icon: Thermometer },
   { id: 'memory', label: 'Memoria', icon: MemoryStick },
+  { id: 'keyboard', label: 'Pantalla del teclado', icon: Keyboard },
   { id: 'settings', label: 'Ajustes', icon: Settings },
 ];
 
@@ -57,7 +58,7 @@ export default function Sidebar({ active, onNavigate }: SidebarProps) {
         })}
       </nav>
 
-      <span className="mt-auto text-[10px] font-semibold tracking-wide text-faint">v0.1</span>
+      <span className="mt-auto text-[10px] font-semibold tracking-wide text-faint">v{__APP_VERSION__}</span>
     </aside>
   );
 }

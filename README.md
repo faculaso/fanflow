@@ -1,6 +1,6 @@
 # FanFlow
 
-Control de refrigeración y monitoreo de hardware para Windows: curvas de ventiladores, temperaturas en vivo, el display de temperatura del disipador y liberación de memoria RAM, en una interfaz con estilo *glassmorphism* clara u oscura.
+Control de refrigeración y monitoreo de hardware para Windows: curvas de ventiladores, temperaturas en vivo, el display de temperatura del disipador liberación de memoria RAM y GIFs en la pantallita del teclado, en una interfaz con estilo *glassmorphism* clara u oscura.
 
 ## Funciones
 
@@ -9,6 +9,7 @@ Control de refrigeración y monitoreo de hardware para Windows: curvas de ventil
 - **Sensores:** temperaturas de CPU, GPU y placa madre, y el estado de cada ventilador.
 - **Display del disipador:** manda la temperatura de la CPU o la GPU al mini display de 7 segmentos de disipadores Redragon / CSM / Alseye / Coolmoon (USB HID `5131:2007`), sin el software del fabricante.
 - **Memoria:** libera RAM como QuickCPU o RAMMap (vaciar *working sets*, lista modificada, lista en espera, caché de archivos), a mano o automáticamente al superar un umbral de uso.
+- **Pantalla del teclado** (experimental): sube GIFs e imágenes a la pantallita de teclados con la placa Sonix / HFD `RKGK890` (USB `0C45:8009`) y les pone la hora, sin el programa del fabricante. Solo por cable. Pantallas soportadas: 128 × 128 (Ajazz AK820 Pro, AKS075 y variantes Epomaker) y 160 × 80 (Monka / Marvo Storm KG991W).
 - **Iniciar con Windows:** arranca minimizado en la bandeja, sin pedir permisos en cada inicio.
 - **Alertas** de temperatura crítica (80 °C), unidades °C / °F y tema claro u oscuro.
 
@@ -55,7 +56,7 @@ npm run electron:build
 | --- | --- |
 | `src/` | Interfaz en React + TypeScript + Tailwind CSS 4. |
 | `electron/` | Proceso principal de Electron: ventana, bandeja, preferencias, inicio con Windows y el puente con el helper. |
-| `hardware-helper/` | Helper en C# (.NET 9) que corre elevado. Lee sensores y controla ventiladores con LibreHardwareMonitor, maneja el display del disipador y libera memoria. |
+| `hardware-helper/` | Helper en C# (.NET 9) que corre elevado. Lee sensores y controla ventiladores con LibreHardwareMonitor, maneja el display del disipador y la pantalla del teclado, y libera memoria. |
 | `build-resources/` | Íconos, script del instalador NSIS y el instalador de PawnIO. |
 
 La interfaz y el helper se comunican por stdin/stdout con mensajes JSON, uno por línea.
@@ -72,6 +73,21 @@ Un reporte HID de salida de 65 bytes, enviado una vez por segundo:
 ```
 
 Gracias a [csm-cooler-lcd](https://github.com/YehanKD/csm-cooler-lcd) y [bemless-m120d-plus](https://github.com/AnthonyKeyGH/bemless-m120d-plus), que documentaron el protocolo.
+
+### Protocolo de la pantalla del teclado
+
+Dos interfaces HID de fabricante, que solo aparecen por cable:
+
+| Interfaz | Usage page | Uso |
+| --- | --- | --- |
+| Control | `0xFF13` | Comandos: *feature reports* de 64 bytes `04 cmd sub … ` |
+| Datos | `0xFF68` | Imagen: *output reports* de 4096 bytes, con un ACK de 64 bytes después de cada uno |
+
+Para subir una imagen se envía `START (04 18)`, luego `IMAGE_CFG (04 72 03, bytes 8-9 = cantidad de bloques)`, después los bloques de datos y al final `SAVE (04 02)`. Los datos son una cabecera de 256 bytes (cantidad de cuadros y la demora de cada uno en unidades de 2 ms) seguida de los cuadros en RGB565 *little-endian*.
+
+Todos estos teclados usan el mismo identificador USB y variantes del mismo programa del fabricante (`DeviceDriver.exe`), pero con pantallas de distinto tamaño. Por eso FanFlow identifica el modelo por el nombre que reporta el teclado y, si no lo reconoce, pide elegir la pantalla antes de enviar. Los datos del KG991W (pantalla de 160 × 80, *slot* y formato del reloj) salen de desensamblar su programa oficial.
+
+Gracias a [aks075-linux](https://github.com/aar-rafi/aks075-linux), [ajazz-ak820-config](https://github.com/Beattrey/ajazz-ak820-config) y [EPOMAKER-Ajazz-AK820-Pro](https://github.com/gohv/EPOMAKER-Ajazz-AK820-Pro), que relevaron el protocolo a partir del driver oficial.
 
 ## Componentes de terceros
 
