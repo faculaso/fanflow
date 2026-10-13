@@ -249,7 +249,8 @@ export function StatusChip({
     <span
       className={`inline-flex shrink-0 items-center gap-1.5 rounded-full bg-chip px-2.5 py-1 text-[11px] font-semibold ${styles}`}
     >
-      <span className={`h-1.5 w-1.5 rounded-full ${dot} ${tone === 'ok' ? 'animate-pulse' : ''}`} />
+      {/* Static on purpose: a pulsing dot inside a glass card re-blurs it every frame. */}
+      <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
       {children}
     </span>
   );

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Fan, Keyboard, LayoutGrid, MemoryStick, Settings, SlidersHorizontal, Thermometer } from 'lucide-react';
+import { Fan, LayoutGrid, MemoryStick, Settings, SlidersHorizontal, Thermometer } from 'lucide-react';
 import type { DashboardView } from './types';
 
 interface NavItem {
@@ -13,7 +13,6 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'curves', label: 'Curvas de ventilación', icon: SlidersHorizontal },
   { id: 'sensors', label: 'Sensores', icon: Thermometer },
   { id: 'memory', label: 'Memoria', icon: MemoryStick },
-  { id: 'keyboard', label: 'Pantalla del teclado', icon: Keyboard },
   { id: 'settings', label: 'Ajustes', icon: Settings },
 ];
 
@@ -25,8 +24,9 @@ interface SidebarProps {
 export default function Sidebar({ active, onNavigate }: SidebarProps) {
   return (
     <aside className="sticky top-14 flex h-[calc(100vh-5rem)] max-h-[640px] w-[72px] shrink-0 flex-col items-center gap-6 self-start">
-      <span className="accent-gradient chip-shadow flex h-12 w-12 items-center justify-center rounded-full text-white">
-        <Fan className="h-6 w-6 animate-[spin_6s_linear_infinite]" />
+      {/* Spins on hover only: a permanent animation keeps the compositor drawing every frame. */}
+      <span className="group accent-gradient chip-shadow flex h-12 w-12 items-center justify-center rounded-full text-white">
+        <Fan className="h-6 w-6 group-hover:animate-[spin_1.5s_linear_infinite]" />
       </span>
 
       <nav className="glass flex flex-col items-center gap-2 rounded-full p-2">

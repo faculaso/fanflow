@@ -110,17 +110,23 @@ body {
 }
 
 @layer components {
+  /* No backdrop-filter on cards and panels: all that sits behind them is the
+     already-blurred static backdrop, so re-blurring it looked the same but cost
+     a GPU pass per card on every repaint (each live update). */
   .glass {
     background: var(--glass);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
+  }
+
+  /* For glass that floats over scrolling content, where the blur is visible. */
+  .glass-float {
     backdrop-filter: blur(28px) saturate(150%);
   }
 
   .glass-panel {
     background: var(--panel);
     border: 1px solid var(--glass-border);
-    backdrop-filter: blur(12px);
   }
 
   .accent-gradient {
@@ -191,7 +197,9 @@ body {
   backdrop-filter: blur(18px) saturate(140%);
 }
 
-/* Soft, slowly drifting colour blobs behind the glass, as in the reference. */
+/* Soft colour blobs behind the glass, as in the reference. Kept static on purpose:
+   any motion here forces every backdrop-filter panel above to re-blur each frame,
+   which kept the GPU busy (~70% 3D load) just to show the app. */
 .backdrop {
   position: fixed;
   inset: 0;
@@ -206,22 +214,6 @@ body {
   border-radius: 9999px;
   filter: blur(80px);
   opacity: 0.9;
-  animation: drift 26s ease-in-out infinite alternate;
-}
-
-@keyframes drift {
-  from {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  to {
-    transform: translate3d(40px, -30px, 0) scale(1.08);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .backdrop span {
-    animation: none;
-  }
 }
 
 ::-webkit-scrollbar {

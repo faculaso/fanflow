@@ -18,7 +18,7 @@ interface ProfileBarProps {
 export default function ProfileBar({ active, onChange }: ProfileBarProps) {
   return (
     <div className="sticky bottom-5 z-20 flex justify-center">
-      <div className="glass flex items-center gap-1 rounded-full p-1.5">
+      <div className="glass glass-float flex items-center gap-1 rounded-full p-1.5">
         <span className="px-3 text-[11px] font-semibold uppercase tracking-wider text-faint">Perfil</span>
         {PROFILES.map(({ id, label, icon: Icon }) => {
           const isActive = id === active;
